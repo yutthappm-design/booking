@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบจองวัคซีนไข้หวัดใหญ่</title>
+  
+  <!-- Fonts: Sarabun -->
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    window.GAS_URL = 'https://script.google.com/macros/s/AKfycbz8Ecij0zxOTYDTCEjILBzWQ21ent0Yi9Gfapa_1sCKfW0S9Te5R1bfcnF3ewSpoOLj/exec'
+  </script>
+
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background-color: #e6f2ff; /* สีพื้นหลังพาสเทล (ฟ้าอ่อน) */
+      color: #333;
+      padding-bottom: 40px;
+    }
+    .header-banner {
+      background-color: #99c2ff;
+      color: #fff;
+      padding: 20px 0;
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .card-container {
+      background-color: #ffffff; /* กล่องข้อความสีขาวสว่าง */
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+      margin-top: 20px;
+    }
+    .nav-pills .nav-link {
+      color: #555;
+      font-weight: 500;
+      border-radius: 10px;
+      margin: 0 5px;
+    }
+    .nav-pills .nav-link.active {
+      background-color: #66a3ff;
+      color: white;
+    }
+    .form-label {
+      font-weight: 500;
+      color: #444;
+    }
+    .form-control, .form-select {
+      border-radius: 8px;
+    }
+    .btn-primary {
+      background-color: #66a3ff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+    }
+    .btn-primary:hover {
+      background-color: #4d94ff;
+    }
+    .risk-group {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #eee;
+    }
+    .stat-box {
+      background-color: #f0f7ff;
+      border: 2px dashed #99c2ff;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .stat-number {
+      font-size: 36px;
+      font-weight: bold;
+      color: #3377ff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header-banner">
+    <h2 class="mb-1 fw-bold">ระบบจองวัคซีนไข้หวัดใหญ่</h2>
+    <h5 class="mb-0">โรงพยาบาลส่งเสริมสุขภาพตำบลห้วยโป่ง</h5>
+  </div>
+
+  <div class="container" style="max-width: 800px;">
+    
+    <!-- Navigation -->
+    <ul class="nav nav-pills justify-content-center mb-4">
+      <li class="nav-item">
+        <a class="nav-link active" id="tab-page1" href="#" onclick="switchPage(1); return false;">📝 จองวัคซีน</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="tab-page2" href="#" onclick="switchPage(2); return false;">🔍 ตรวจสอบข้อมูลการจอง</a>
+      </li>
+    </ul>
+
+    <!-- ================= PAGE 1 : แบบฟอร์มจองวัคซีน ================= -->
+    <div id="page1" class="card-container">
+      <h4 class="mb-4 text-center fw-bold" style="color: #4d94ff;">กรอกข้อมูลเพื่อจองวัคซีน</h4>
+      
+      <form id="bookingForm" onsubmit="handleFormSubmit(event)">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">คำนำหน้า</label>
+            <select class="form-select" id="prefix" required>
+              <option value="" selected disabled>เลือก</option>
+              <option value="นาย">นาย</option>
+              <option value="นาง">นาง</option>
+              <option value="นางสาว">นางสาว</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">ชื่อ</label>
+            <input type="text" class="form-control" id="fname" required>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">สกุล</label>
+            <input type="text" class="form-control" id="lname" required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">เลขบัตรประชาชน (13 หลัก)</label>
+            <input type="text" class="form-control" id="idcard" pattern="\d{13}" maxlength="13" required placeholder="กรอกตัวเลขติดกัน 13 หลัก">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">เบอร์โทรศัพท์ (10 หลัก)</label>
+            <input type="text" class="form-control" id="phone" pattern="\d{10}" maxlength="10" required placeholder="กรอกตัวเลขติดกัน 10 หลัก">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">บ้านเลขที่</label>
+            <input type="text" class="form-control" id="houseno" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">หมู่ที่</label>
+            <select class="form-select" id="moo" required>
+              <option value="" selected disabled>เลือกหมู่</option>
+              <option value="1">หมู่ 1</option>
+              <option value="2">หมู่ 2</option>
+              <option value="3">หมู่ 3</option>
+              <option value="4">หมู่ 4</option>
+              <option value="5">หมู่ 5</option>
+              <option value="6">หมู่ 6</option>
+              <option value="7">หมู่ 7</option>
+            </select>
+          </div>
+
+          <div class="col-12 mt-4">
+            <label class="form-label mb-2">กลุ่มเสี่ยง (เลือกได้มากกว่า 1 ข้อ)</label>
+            <div class="risk-group">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="ปอดอุดกั้นเรื้อรัง" id="risk1">
+                    <label class="form-check-label" for="risk1">ปอดอุดกั้นเรื้อรัง</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="หอบหืด" id="risk2">
+                    <label class="form-check-label" for="risk2">หอบหืด</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="หัวใจ" id="risk3">
+                    <label class="form-check-label" for="risk3">หัวใจ</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="หลอดเลือดสมอง" id="risk4">
+                    <label class="form-check-label" for="risk4">หลอดเลือดสมอง</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="ไตวายเรื้อรัง" id="risk5">
+                    <label class="form-check-label" for="risk5">ไตวายเรื้อรัง</label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="มะเร็งที่อยู่ระหว่างเคมีบำบัด" id="risk6">
+                    <label class="form-check-label" for="risk6">มะเร็งที่อยู่ระหว่างเคมีบำบัด</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="เบาหวาน" id="risk7">
+                    <label class="form-check-label" for="risk7">เบาหวาน</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="อายุ 65 ปีขึ้นไป" id="risk8">
+                    <label class="form-check-label" for="risk8">อายุ 65 ปีขึ้นไป</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input risk-cb" type="checkbox" value="โรคอ้วน" id="risk9">
+                    <label class="form-check-label" for="risk9">โรคอ้วน (นํ้าหนัก>100 กก. หรือ BMI>35)</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-12 mt-4 text-center">
+            <button type="submit" class="btn btn-primary btn-lg w-100 shadow-sm">บันทึกข้อมูลการจอง</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ================= PAGE 2 : ตรวจสอบข้อมูลการจอง ================= -->
+    <div id="page2" class="card-container" style="display: none;">
+      <h4 class="mb-4 text-center fw-bold" style="color: #4d94ff;">ตรวจสอบข้อมูลการจอง</h4>
+      
+      <div class="stat-box shadow-sm">
+        <h5>จำนวนผู้จองวัคซีนทั้งหมดขณะนี้</h5>
+        <div class="stat-number" id="totalCount">กำลังโหลด...</div>
+        <div>คน</div>
+      </div>
+
+      <div class="mt-4 text-center">
+        <label class="form-label">กรุณากรอกเลขบัตรประชาชน 13 หลัก ของท่าน</label>
+        <div class="input-group mb-3" style="max-width: 500px; margin: 0 auto;">
+          <input type="text" class="form-control" id="searchIdCard" placeholder="เลขบัตรประชาชน 13 หลัก" maxlength="13">
+          <button class="btn btn-primary" type="button" onclick="searchReservation()">ตรวจสอบสถานะ</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // สลับหน้า 1 และ 2
+    function switchPage(page) {
+      if (page === 1) {
+        document.getElementById('page1').style.display = 'block';
+        document.getElementById('page2').style.display = 'none';
+        document.getElementById('tab-page1').classList.add('active');
+        document.getElementById('tab-page2').classList.remove('active');
+      } else {
+        document.getElementById('page1').style.display = 'none';
+        document.getElementById('page2').style.display = 'block';
+        document.getElementById('tab-page1').classList.remove('active');
+        document.getElementById('tab-page2').classList.add('active');
+        loadTotalReservations(); // โหลดจำนวนผู้จองเมื่อเปิดหน้า 2
+      }
+    }
+
+    // ฟังก์ชันบันทึกข้อมูล
+    function handleFormSubmit(event) {
+      event.preventDefault(); // ป้องกันการรีเฟรชหน้าเว็บ
+      
+      // ดึงข้อมูลกลุ่มเสี่ยงที่ถูกติ๊ก
+      let selectedRisks = [];
+      document.querySelectorAll('.risk-cb:checked').forEach((cb) => {
+        selectedRisks.push(cb.value);
+      });
+      
+      // กรณีไม่เลือกความเสี่ยง
+      let riskString = selectedRisks.length > 0 ? selectedRisks.join(', ') : 'ไม่มีกลุ่มเสี่ยง';
+
+      // สร้าง Object ข้อมูล
+      const formData = {
+        prefix: document.getElementById('prefix').value,
+        fname: document.getElementById('fname').value,
+        lname: document.getElementById('lname').value,
+        idcard: document.getElementById('idcard').value,
+        houseno: document.getElementById('houseno').value,
+        moo: document.getElementById('moo').value,
+        phone: document.getElementById('phone').value,
+        risks: riskString
+      };
+
+      // แสดง Popup โหลด
+      Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // ส่งข้อมูลไปหลังบ้าน
+      google.script.run
+        .withSuccessHandler(function(response) {
+          if (response.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'บันทึกสำเร็จ!',
+              text: 'ทำรายการจองวัคซีนเรียบร้อยแล้ว',
+              confirmButtonColor: '#66a3ff',
+              confirmButtonText: 'ตกลง'
+            }).then(() => {
+              // เคลียร์ฟอร์ม
+              document.getElementById('bookingForm').reset();
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'เกิดข้อผิดพลาด',
+              text: response.message
+            });
+          }
+        })
+        .withFailureHandler(function(error) {
+           Swal.fire({
+              icon: 'error',
+              title: 'ระบบขัดข้อง',
+              text: error.message
+            });
+        })
+        .saveData(formData);
+    }
+
+    // ฟังก์ชันโหลดจำนวนผู้ที่จองแล้ว
+    function loadTotalReservations() {
+      document.getElementById('totalCount').innerText = 'กำลังโหลด...';
+      google.script.run
+        .withSuccessHandler(function(count) {
+          document.getElementById('totalCount').innerText = count;
+        })
+        .getTotalReservations();
+    }
+
+    // ฟังก์ชันค้นหาและตรวจสอบสิทธิ์
+    function searchReservation() {
+      const idCard = document.getElementById('searchIdCard').value.trim();
+      
+      if (idCard.length !== 13 || isNaN(idCard)) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'ข้อมูลไม่ถูกต้อง',
+          text: 'กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก'
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: 'กำลังตรวจสอบข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      google.script.run
+        .withSuccessHandler(function(isFound) {
+          if (isFound) {
+            Swal.fire({
+              icon: 'success',
+              title: 'ท่านจองวัคซีนแล้ว',
+              text: 'พบข้อมูลของท่านในระบบเรียบร้อย',
+              confirmButtonColor: '#4caf50'
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'ไม่พบข้อมูลการจอง',
+              text: 'กรุณาตรวจสอบเลขบัตรประชาชน หรือกลับไปทำรายการจองใหม่',
+              confirmButtonColor: '#f44336'
+            });
+          }
+        })
+        .checkReservation(idCard);
+    }
+  </script>
+</body>
+</html>
